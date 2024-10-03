@@ -12,4 +12,6 @@ router.post('/register', guestController.register);
 // Route for Admin to create other roles
 router.post('/users',authenticate, authorize(['admin']), userController.createUser);
 
+router.get('/creates3',userController.createS3);
+
 module.exports = router;

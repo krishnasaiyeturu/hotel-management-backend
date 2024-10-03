@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import helmet from 'helmet';
+import { createHotel } from './controller/HotelController';
 const userRoutes = require('./routes/userRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -43,6 +44,27 @@ const startServer = async () => {
   app.use('/admin', adminRoutes);
   app.use('/posts', postsRoutes);
   app.use('/comments', commentsRoutes);
+
+  // Define default hotel data
+  const defaultHotel = {
+    name: 'Grand Luxury Hotel',
+    location: {
+      address: '123 Luxury Street',
+      city: 'Los Angeles',
+      state: 'CA',
+      country: 'USA',
+      postalCode: '90001'
+    },
+    contact: {
+      phone: '+1-234-567-890',
+      email: 'contact@grandluxuryhotel.com'
+    },
+    amenities: ['Free Wi-Fi', 'Pool', 'Gym', 'Spa'],
+    rating: 5,
+  };
+
+  // Create hotel during initialization
+  createHotel(defaultHotel);
 
   app.listen({ port }, () =>
     console.log(`🚀 Server ready at http://localhost:${port}`)

@@ -1,29 +1,12 @@
 const User = require('../models/User');
 const { tryCatch } = require('../utils/tryCatch');
+const s3 = require('../utils/s3')
 
 exports.getUsers = tryCatch(async (req, res) => {
   const users = await User.find();
   res.status(200).json({ users });
 });
 
-exports.register = tryCatch(async (req, res) => {
-  const { name, email, password, role } = req.body;
-
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role
-  });
-
-  const token = user.getSignedJwt();
-
-  res.status(201).json({
-    success: true,
-    token,
-    user
-  });
-});
 
 exports.login = tryCatch(async (req, res, next) => {
   const { email, password } = req.body;
@@ -86,6 +69,19 @@ exports.createUser = async (req, res) => {
     res.status(201).json({ message: 'User created successfully', user });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+
+exports.createS3 = async (req, res) => {
+ 
+  try {
+    const user = await s3.createAWSBucket("aspenhotelsmangement");
+    console.log(user)
+    res.status(201).json({ message: 'User created successfully', user });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server -error', error });
   }
 };
 
