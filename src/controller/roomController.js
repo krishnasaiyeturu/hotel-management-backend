@@ -4,6 +4,7 @@ const s3 = require('../utils/s3');
 const url = require('url'); 
 import dotenv from 'dotenv';
 import { S3_BUCKET_NAME, SUPPORTED_ROOM_TYPES } from '../utils/constants';
+import { Json } from 'sequelize/lib/utils';
 dotenv.config();
 
 
@@ -49,15 +50,16 @@ exports.createRoomAndRoomType = async (req, res) => {
         description: description || '',
         maxOccupancy,
         pricePerNight,
-        amenities,
+        amenities:JSON.parse(amenities),
         photos: photoUrls
       });
     }
 
     // Step 2: Create multiple rooms with reference to the new RoomType
+    let roomsArray = JSON.parse(rooms)
     const newRooms = [];
-    for (let i = 0; i < rooms.length; i++) {
-      const { roomNumber, floorNumber } = rooms[i]; // Extract roomNumber and floorNumber from each object
+    for (let i = 0; i < roomsArray.length; i++) {
+      const { roomNumber, floorNumber } = roomsArray[i]; // Extract roomNumber and floorNumber from each object
       const newRoom = await Room.create({
         hotel,
         roomNumber,
