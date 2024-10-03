@@ -5,15 +5,13 @@ const {authenticate , authorize } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.get('/room-types',roomController.getRoomTypes);
+
 // Room Operations
 router.post('/',upload.array('photos'), roomController.createRoomAndRoomType); // Create a new room
 router.get('/', roomController.getAllRooms); // View all rooms
 router.get('/:id', roomController.getRoomById); // Get specific room details
-// router.put('/:id', authorize(['admin', 'manager']), roomController.updateRoom); // Update room details
-// router.delete('/:id', authorize(['admin']), roomController.deleteRoom); // Delete a room
 
-// // Room Status Management
-// router.put('/:id/status', authorize(['housekeeping']), roomController.updateRoomStatus); // Update room status
-// router.put('/:id/maintenance', authorize(['maintenance']), roomController.markRoomUnderMaintenance); // Mark room as under maintenance
+
 
 module.exports = router;

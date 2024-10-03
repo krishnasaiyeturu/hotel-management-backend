@@ -3,7 +3,7 @@ const RoomType = require('../models/RoomType');
 const s3 = require('../utils/s3');
 const url = require('url'); 
 import dotenv from 'dotenv';
-import { S3_BUCKET_NAME } from '../utils/constants';
+import { S3_BUCKET_NAME, SUPPORTED_ROOM_TYPES } from '../utils/constants';
 dotenv.config();
 
 
@@ -167,4 +167,17 @@ exports.getRoomById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
+};
+
+
+exports.getRoomTypes = async (req, res) => {
+  try {
+    res.status(200).json({
+      status: 200,
+      data: SUPPORTED_ROOM_TYPES
+    });
+  } catch (error) {
+    console.error(error);
+  }
+  
 };
