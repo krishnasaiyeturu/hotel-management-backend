@@ -58,6 +58,25 @@ const createHotel = async (req, res) => {
   }
 };
 
+// Get all hotels
+exports.getAllHotels = async (req, res) => {
+  try {
+    // Retrieve all hotels from the database
+    const hotels = await Hotel.find();
+
+    // If no hotels found
+    if (!hotels || hotels.length === 0) {
+      return res.status(404).json({ message: 'No hotels found' });
+    }
+
+    // Respond with the list of hotels
+    res.status(200).json(hotels);
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   createHotel
 };

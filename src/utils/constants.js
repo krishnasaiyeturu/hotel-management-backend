@@ -1,4 +1,5 @@
 module.exports = {
+    ROLES:['guest', 'frontdesk', 'manager', 'admin', 'housekeeping', 'maintenance'],
     S3_BUCKET_NAME: 'aspenhotelsmangement',
     DEFAULT_EXPIRATION: 3600, // Expiration time for presigned URLs (1 hour)
     SUPPORTED_ROOM_TYPES: [
@@ -7,5 +8,21 @@ module.exports = {
       '1 King Bed One Bedroom Suite',
       '2 Queen Beds Suite'
     ],
+    DEFAULT_HOTEL:{
+        name: 'ASPEN GRAND HOTELS',
+        location: {
+          address: '908 West G Street',
+          city: 'La Porte',
+          state: 'Texas',
+          country: 'United States',
+          postalCode: '77571'
+        },
+        contact: {
+          phone: '+1-234-567-890',
+          email: 'contact@grandluxuryhotel.com'
+        },
+        amenities: ['Free Wi-Fi', 'Pool', 'Gym', 'Spa'],
+        rating: 5,
+      },
   };
   

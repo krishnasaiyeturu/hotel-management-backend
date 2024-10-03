@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const { tryCatch } = require('../utils/tryCatch');
-const s3 = require('../utils/s3')
+const s3 = require('../utils/s3');
+const { ROLES } = require('../utils/constants');
 
 exports.getUsers = tryCatch(async (req, res) => {
   const users = await User.find();
@@ -53,7 +54,7 @@ exports.createUser = async (req, res) => {
   }
 
   // Validate role
-  const validRoles = ['receptionist', 'manager', 'admin', 'housekeeping', 'maintenance'];
+  const validRoles = ROLES;
   if (!validRoles.includes(role)) {
     return res.status(400).json({ message: 'Invalid role' });
   }

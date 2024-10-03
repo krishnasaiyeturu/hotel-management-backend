@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import { createHotel } from './controller/HotelController';
+import { DEFAULT_HOTEL } from './utils/constants';
 const userRoutes = require('./routes/userRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -23,7 +24,10 @@ const port = process.env.PORT || 4000;
 const startServer = async () => {
   const app = express();
 
-  await mongoose.connect(process.env.MONGO_URI);
+  // await mongoose.connect(process.env.MONGO_URI);
+  await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
   app.use(morgan('dev'));
   app.use(helmet());
@@ -45,26 +49,9 @@ const startServer = async () => {
   app.use('/posts', postsRoutes);
   app.use('/comments', commentsRoutes);
 
-  // Define default hotel data
-  const defaultHotel = {
-    name: 'ASPEN GRAND HOTELS',
-    location: {
-      address: '908 West G Street',
-      city: 'La Porte',
-      state: 'Texas',
-      country: 'United States',
-      postalCode: '77571'
-    },
-    contact: {
-      phone: '+1-234-567-890',
-      email: 'contact@grandluxuryhotel.com'
-    },
-    amenities: ['Free Wi-Fi', 'Pool', 'Gym', 'Spa'],
-    rating: 5,
-  };
 
   // Create hotel during initialization
-  createHotel(defaultHotel);
+  createHotel(DEFAULT_HOTEL);
 
   app.listen({ port }, () =>
     console.log(`🚀 Server ready at http://localhost:${port}`)
