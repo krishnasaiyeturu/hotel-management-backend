@@ -2,7 +2,7 @@ const Hotel = require('../models/Hotel');
 const sendEmail = require('../utils/email');
 
 // Function to create a new hotel
-const createHotel = async (req, res) => {
+exports.createHotel = async (req, res) => {
   try {
 
     // Destructure request body to get the required hotel data
@@ -61,22 +61,18 @@ const createHotel = async (req, res) => {
 // Get all hotels
 exports.getAllHotels = async (req, res) => {
   try {
-    // Retrieve all hotels from the database
-    const hotels = await Hotel.find();
+    // Retrieve all hotels from the database, selecting only the name and ID
+    const hotels = await Hotel.find().select('_id name'); // Use .select() to specify fields
 
     // If no hotels found
     if (!hotels || hotels.length === 0) {
       return res.status(404).json({ message: 'No hotels found' });
     }
 
-    // Respond with the list of hotels
+    // Respond with the list of hotels (only ID and name)
     res.status(200).json(hotels);
   } catch (error) {
     // Handle errors
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'No hotels found', error: error.message });
   }
-};
-
-module.exports = {
-  createHotel
 };

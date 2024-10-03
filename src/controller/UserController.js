@@ -21,15 +21,15 @@ exports.login = tryCatch(async (req, res, next) => {
   const user = await User.findOne({ email }).select('+password');
 
   if (!user) {
-    return next({
-      message: 'Invalid Credentials'
+    res.status(403).json({ 
+      message: 'Invalid User'
     });
   }
 
   const isMatch = await user.matchPassword(password);
 
   if (!isMatch) {
-    return next({
+    res.status(403).json({
       message: 'Invalid Credentials'
     });
   }
