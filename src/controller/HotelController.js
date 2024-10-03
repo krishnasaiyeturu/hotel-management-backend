@@ -1,4 +1,5 @@
 const Hotel = require('../models/Hotel');
+const sendEmail = require('../utils/email');
 
 // Function to create a new hotel
 const createHotel = async (req, res) => {
@@ -17,6 +18,16 @@ const createHotel = async (req, res) => {
     const existingHotel = await Hotel.findOne({ name: name });
 
     if (existingHotel) {
+      // async function triggerEmail() {
+      //   try {
+      //     // await sendEmail('krishnasaiyeturu@gmail.com', 'Test Subject', '<h1>This is a test email</h1>');
+      //     console.log('Email sent successfully');
+      //   } catch (error) {
+      //     console.error('Failed to send email:', error);
+      //   }
+      // }
+      
+      // triggerEmail();
     console.log(`Hotel "${name}" already exists.`);
     return {status:400, message: `Hotel "${name}" already exists.` };
 

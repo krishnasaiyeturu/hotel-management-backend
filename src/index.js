@@ -47,13 +47,13 @@ const startServer = async () => {
 
   // Define default hotel data
   const defaultHotel = {
-    name: 'Grand Luxury Hotel',
+    name: 'ASPEN GRAND HOTELS',
     location: {
-      address: '123 Luxury Street',
-      city: 'Los Angeles',
-      state: 'CA',
-      country: 'USA',
-      postalCode: '90001'
+      address: '908 West G Street',
+      city: 'La Porte',
+      state: 'Texas',
+      country: 'United States',
+      postalCode: '77571'
     },
     contact: {
       phone: '+1-234-567-890',

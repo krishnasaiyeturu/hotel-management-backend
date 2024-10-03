@@ -4,8 +4,8 @@ const s3 = require('../utils/s3');
 const url = require('url'); 
 import dotenv from 'dotenv';
 import { S3_BUCKET_NAME } from '../utils/constants';
-
 dotenv.config();
+
 
 // Create a new room
 exports.createRoomAndRoomType = async (req, res) => {
