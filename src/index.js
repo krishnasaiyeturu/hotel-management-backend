@@ -45,9 +45,9 @@ const startServer = async () => {
   app.use(ErrorResponse);
   app.use('/api/auth', userRoutes);
   app.use('/api/room', roomRoutes);
-  app.use('/admin', adminRoutes);
-  app.use('/posts', postsRoutes);
-  app.use('/comments', commentsRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api/posts', postsRoutes);
+  app.use('/api//comments', commentsRoutes);
 
 
   // Create hotel during initialization
