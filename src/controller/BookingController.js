@@ -216,7 +216,7 @@ exports.checkAvailability = async (req, res) => {
 
       // Add room type availability status to response
       availabilityStatus.push({
-        id: roomType._id,
+        _id: roomType._id,
         name: roomType.name,
         description: roomType.description,
         maxOccupancy: roomType.maxOccupancy,
@@ -224,7 +224,7 @@ exports.checkAvailability = async (req, res) => {
         amenities: roomType.amenities,
         photos: roomType.photos, // Photos now contain pre-signed URLs
         hotel: {
-          id: roomType.hotel._id,
+          _id: roomType.hotel._id,
           name: roomType.hotel.name,
           location: roomType.hotel.location,
           contact: roomType.hotel.contact,
