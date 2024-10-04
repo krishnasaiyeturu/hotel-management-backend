@@ -3,7 +3,7 @@ const RoomType = require('../models/RoomType');
 const s3 = require('../utils/s3');
 const url = require('url'); 
 import dotenv from 'dotenv';
-import { S3_BUCKET_NAME, SUPPORTED_ROOM_TYPES } from '../utils/constants';
+import { S3_BUCKET_EXPIRES, S3_BUCKET_NAME, SUPPORTED_ROOM_TYPES } from '../utils/constants';
 import { Json } from 'sequelize/lib/utils';
 dotenv.config();
 
@@ -189,4 +189,39 @@ exports.getRoomTypes = async (req, res) => {
     console.error(error);
   }
   
+};
+
+exports.getAllRoomTypes = async (req, res) => {
+  try {
+    const filters = {};
+
+    // Check if hotelId query parameter is provided to filter by hotel
+    if (req.query.hotelId) {
+      filters.hotel = req.query.hotelId; // Assuming hotelId is an ObjectId
+    }
+
+    // Fetch room types based on filters
+    const roomTypes = await RoomType.find(filters).populate("hotel");
+
+    // Generate pre-signed URLs for each room type's photos
+    const roomTypesWithPresignedUrls = roomTypes.map(roomType => {
+      const photosWithPresignedUrls = roomType?.photos?.map(photoUrl => {
+        // Extract the key from the full S3 URL
+        const parsedUrl = url.parse(photoUrl);
+        const keyName = parsedUrl.pathname.substring(1); // Remove the leading '/' from the path
+
+        // Generate a pre-signed URL using the extracted key
+        return s3.generatePresignedUrl(S3_BUCKET_NAME, keyName);
+      }) || []; // Default to empty array if no photos
+
+      return {
+        ...roomType.toObject(),
+        photos: photosWithPresignedUrls, // Replace photos with pre-signed URLs
+      };
+    });
+
+    res.status(200).json(roomTypesWithPresignedUrls);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };

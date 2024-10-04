@@ -1,6 +1,7 @@
 module.exports = {
     ROLES:['guest', 'frontdesk', 'manager', 'admin', 'housekeeping', 'maintenance'],
     S3_BUCKET_NAME: 'aspenhotelsmangement',
+    S3_BUCKET_EXPIRES:3600,
     DEFAULT_EXPIRATION: 3600, // Expiration time for presigned URLs (1 hour)
     SUPPORTED_ROOM_TYPES: [
       'Standard Room',

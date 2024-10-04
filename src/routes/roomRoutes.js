@@ -6,10 +6,12 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/room-types',roomController.getRoomTypes);
+router.get('/public',roomController.getAllRoomTypes);
+
 
 // Room Operations
 router.post('/',upload.array('photos'), roomController.createRoomAndRoomType); // Create a new room
-router.get('/', roomController.getAllRooms); // View all rooms
+router.get('/', authenticate , roomController.getAllRooms); // View all rooms
 router.get('/:id', roomController.getRoomById); // Get specific room details
 
 
