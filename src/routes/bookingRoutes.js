@@ -6,9 +6,9 @@ const bookingsController = require('../controller/BookingController');
 // router.get('/rooms/availability', bookingsController.checkRoomAvailability);
 
 // Create a booking
-router.post('/bookings', bookingsController.createBooking);
-
-router.get('/bookings', bookingsController.getAllBookings);
+router.post('/', bookingsController.createBooking);
+router.post('/check-availability', bookingsController.checkAvailability);
+router.get('/', bookingsController.getAllBookings);
 
 
 

@@ -36,8 +36,8 @@ exports.createRoomAndRoomType = async (req, res) => {
         const photoBuffer = photo.buffer;
         // Remove spaces from the original file name
         const sanitizedOriginalName = photo.originalname.replace(/\s+/g, "-"); // Replacing spaces with hyphens
-        const photoName = `${hotel}-${roomTypeName}-${Date.now()}-${sanitizedOriginalName}`;
-        const s3Url = await s3.uploadFileToS3(S3_BUCKET_NAME, photoName, photoBuffer, false);
+        const photoName = `${hotel}-${roomTypeName.replace(/\s+/g, "-")}-${Date.now()}-${sanitizedOriginalName}`;
+        const s3Url = await s3.uploadFileToS3(S3_BUCKET_NAME, photoName.replace(/\s+/g, "-"), photoBuffer, false);
         photoUrls.push(s3Url);
       }
     }
