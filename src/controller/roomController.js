@@ -34,7 +34,9 @@ exports.createRoomAndRoomType = async (req, res) => {
     if (photos && photos.length > 0) {
       for (let photo of photos) {
         const photoBuffer = photo.buffer;
-        const photoName = `${hotel}-${roomTypeName}-${Date.now()}-${photo.originalname}`;
+        // Remove spaces from the original file name
+        const sanitizedOriginalName = photo.originalname.replace(/\s+/g, "-"); // Replacing spaces with hyphens
+        const photoName = `${hotel}-${roomTypeName}-${Date.now()}-${sanitizedOriginalName}`;
         const s3Url = await s3.uploadFileToS3(S3_BUCKET_NAME, photoName, photoBuffer, false);
         photoUrls.push(s3Url);
       }
@@ -185,8 +187,8 @@ exports.getRoomStatusCounts = async (req, res) => {
       }
     ]);
 
-    // Initialize all status counts to 0
-    const formattedCounts = ROOM_STATUS.reduce((acc, status) => {
+     // Initialize all status counts to 0
+     const formattedCounts = ROOM_STATUS.reduce((acc, status) => {
       acc[status] = 0;
       return acc;
     }, {});
@@ -196,40 +198,70 @@ exports.getRoomStatusCounts = async (req, res) => {
       formattedCounts[status._id] = status.count;
     });
 
-    res.status(200).json(formattedCounts);
+    // Calculate the total count by summing all status counts
+    const totalRooms = Object.values(formattedCounts).reduce((acc, count) => acc + count, 0);
+
+    // Add the total count to the response
+    const response = {
+      ...formattedCounts,
+      all: totalRooms, // Add total key
+    };
+
+    res.status(200).json(response);
+    
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 
-// Get specific room by ID
-exports.getRoomById = async (req, res) => {
-  const { id } = req.params;
+// Get specific room Type by ID
+// roomTypeController.js
+exports.getRoomTypeById = async (req, res) => {
   try {
-    const room = await Room.findById(id).populate('type'); // Populate the RoomType details
-    if (!room) {
-      return res.status(404).json({ message: 'Room not found' });
+    const roomTypeId = req.params.roomTypeId;
+
+    // Ensure roomTypeId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(roomTypeId)) {
+      return res.status(400).json({ message: "Invalid Room Type Id" });
     }
 
-    // Generate pre-signed URLs for photos of the room type
-    const bucketName = S3_BUCKET_NAME; // Your S3 bucket name
-    const photosWithPresignedUrls = room.type?.photos?.map(photoUrl => {
-      const parsedUrl = url.parse(photoUrl);
-      const keyName = parsedUrl.pathname.substring(1); // Remove the leading '/' from the path
-      return s3.generatePresignedUrl(bucketName, keyName); // Generate pre-signed URL
-    }) || []; // Default to an empty array if no photos exist
+    // Optionally, check if hotelId query parameter is provided to filter by hotel as well
+    const filters = { _id: roomTypeId };
+    if (req.query.hotelId) {
+      filters.hotel = req.query.hotelId; // Assuming hotelId is an ObjectId
+    }
 
-    // Prepare response
-    res.status(200).json({
-      ...room.toObject(),
-      roomType: room.type?.name, // Include room type name in response
-      photos: photosWithPresignedUrls // Include pre-signed URLs for photos
-    });
+    // Fetch room type based on filters
+    const roomType = await RoomType.findOne(filters).populate("hotel");
+
+    // If room type not found
+    if (!roomType) {
+      return res.status(404).json({ message: "Room Type not found" });
+    }
+
+    // Generate pre-signed URLs for each room type's photos
+    const photosWithPresignedUrls = await Promise.all(
+      roomType?.photos?.map(async (photoUrl) => {
+        const { bucketName, keyName } = await s3.extractBucketAndKey(photoUrl);
+        console.log(bucketName, keyName);
+        // Generate a pre-signed URL using the extracted key
+        return await s3.generatePresignedUrl(bucketName, keyName);
+      }) || [] // Default to empty array if no photos
+    );
+
+    // Add pre-signed URLs to the response object
+    const roomTypeWithPresignedUrls = {
+      ...roomType.toObject(),
+      photos: photosWithPresignedUrls, // Replace photos with pre-signed URLs
+    };
+
+    res.status(200).json(roomTypeWithPresignedUrls);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 
 exports.getRoomTypes = async (req, res) => {
@@ -257,21 +289,21 @@ exports.getAllRoomTypes = async (req, res) => {
     const roomTypes = await RoomType.find(filters).populate("hotel");
 
     // Generate pre-signed URLs for each room type's photos
-    const roomTypesWithPresignedUrls = roomTypes.map(roomType => {
-      const photosWithPresignedUrls = roomType?.photos?.map(photoUrl => {
-        // Extract the key from the full S3 URL
-        const parsedUrl = url.parse(photoUrl);
-        const keyName = parsedUrl.pathname.substring(1); // Remove the leading '/' from the path
-
-        // Generate a pre-signed URL using the extracted key
-        return s3.generatePresignedUrl(S3_BUCKET_NAME, keyName);
-      }) || []; // Default to empty array if no photos
+    const roomTypesWithPresignedUrls = await Promise.all(roomTypes.map(async roomType => {
+      const photosWithPresignedUrls = await Promise.all(
+        roomType?.photos?.map(async (photoUrl) => {
+          const { bucketName, keyName } = await s3.extractBucketAndKey(photoUrl);
+          console.log(bucketName, keyName);
+          // Generate a pre-signed URL using the extracted key
+          return await s3.generatePresignedUrl(bucketName, keyName);
+        }) || [] // Default to empty array if no photos
+      );
 
       return {
         ...roomType.toObject(),
         photos: photosWithPresignedUrls, // Replace photos with pre-signed URLs
       };
-    });
+    }));
 
     res.status(200).json(roomTypesWithPresignedUrls);
   } catch (error) {

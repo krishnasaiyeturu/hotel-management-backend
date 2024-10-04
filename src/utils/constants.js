@@ -25,7 +25,7 @@ module.exports = {
           email: 'contact@grandluxuryhotel.com'
         },
         amenities: ['Free Wi-Fi', 'Pool', 'Gym', 'Spa'],
-        rating: 5,
+        rating: 4.2,
       },
   };
   
