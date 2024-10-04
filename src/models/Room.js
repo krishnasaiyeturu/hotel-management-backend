@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { SUPPORTED_ROOM_TYPES } = require('../utils/constants');
+const { SUPPORTED_ROOM_TYPES, ROOM_STATUS } = require('../utils/constants');
 
 const RoomSchema = new mongoose.Schema({
   hotel: {
@@ -23,7 +23,7 @@ const RoomSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['available', 'booked', 'maintenance'],
+    enum: ROOM_STATUS,
     default: 'available'
   }
 }, { timestamps: true });

@@ -20,7 +20,13 @@ const HotelSchema = new mongoose.Schema({
   rating: {
     type: Number,
     min: 1,
-    max: 5
+    max: 5,
+    validate: {
+      validator: function(v) {
+        return /^\d+(\.\d{1})?$/.test(v); // Regex to allow up to one decimal place
+      },
+      message: props => `${props.value} is not a valid rating. Only one decimal place is allowed.`
+    }
   },
 //   rooms: [{
 //     type: mongoose.Schema.Types.ObjectId,

@@ -7,8 +7,10 @@ module.exports = {
       'Standard Room',
       '2 Queen Beds Suite',
       '1 King Bed One Bedroom Suite',
-      '2 Queen Beds Suite'
+      '1 Bedroom Suite'
     ],
+    ROOM_STATUS:['available', 'booked', 'maintenance'],
+    BOOKING_STATUS: ['booked', 'checked-in', 'checked-out', 'canceled','no-show'],
     DEFAULT_HOTEL:{
         name: 'ASPEN GRAND HOTELS',
         location: {

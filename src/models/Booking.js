@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { BOOKING_STATUS } = require('../utils/constants');
 
 const BookingSchema = new mongoose.Schema({
   bookingId: {
@@ -30,7 +31,7 @@ const BookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['booked', 'checked-in', 'checked-out', 'canceled'],
+    enum: BOOKING_STATUS,
     default: 'booked'
   },
   bookingSource: {

@@ -1,10 +1,10 @@
 const Room = require('../models/Room');
+const mongoose = require('mongoose');
 const RoomType = require('../models/RoomType');
 const s3 = require('../utils/s3');
 const url = require('url'); 
 import dotenv from 'dotenv';
-import { S3_BUCKET_EXPIRES, S3_BUCKET_NAME, SUPPORTED_ROOM_TYPES } from '../utils/constants';
-import { Json } from 'sequelize/lib/utils';
+import { ROOM_STATUS, S3_BUCKET_EXPIRES, S3_BUCKET_NAME, SUPPORTED_ROOM_TYPES } from '../utils/constants';
 dotenv.config();
 
 
@@ -83,16 +83,22 @@ exports.createRoomAndRoomType = async (req, res) => {
 
 exports.getAllRooms = async (req, res) => {
   try {
+
+    // Extract filters from query parameters
+    const filters = {};
+
     // Check if the hotel query parameter is provided
     if (!req.query.hotelId) {
       return res.status(400).json({ message: 'Hotel Id is required' });
     }
 
-    // Extract filters from query parameters
-    const filters = {};
+    // Ensure hotelId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.query.hotelId)) {
+      return res.status(400).json({ message: 'Invalid Hotel Id' });
+    }
 
-    // Hotel filter (mandatory)
-    filters.hotel = req.query.hotelId; // Assuming hotel is an ObjectId
+    // Apply hotelId filter
+    filters.hotel = mongoose.Types.ObjectId(req.query.hotelId);
 
     // Filter by room type if provided
     if (req.query.type) {
@@ -146,6 +152,53 @@ exports.getAllRooms = async (req, res) => {
     res.status(200).json(roomsWithPresignedUrls);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+exports.getRoomStatusCounts = async (req, res) => {
+  try {
+    const filters = {};
+
+
+    // Check if the hotel query parameter is provided
+    if (!req.query.hotelId) {
+      return res.status(400).json({ message: 'Hotel Id is required' });
+    }
+
+    // Ensure hotelId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.query.hotelId)) {
+      return res.status(400).json({ message: 'Invalid Hotel Id' });
+    }
+
+    // Apply hotelId filter
+    filters.hotel = mongoose.Types.ObjectId(req.query.hotelId);
+
+    // Aggregate rooms by status and count the number of rooms for each status
+    const statusCounts = await Room.aggregate([
+      // { $match: filters }, // Apply hotel filter
+      {
+        $group: {
+          _id: "$status", // Group by room status
+          count: { $sum: 1 } // Count the number of rooms per status
+        }
+      }
+    ]);
+
+    // Initialize all status counts to 0
+    const formattedCounts = ROOM_STATUS.reduce((acc, status) => {
+      acc[status] = 0;
+      return acc;
+    }, {});
+
+    // Fill in actual counts from the aggregation result
+    statusCounts.forEach(status => {
+      formattedCounts[status._id] = status.count;
+    });
+
+    res.status(200).json(formattedCounts);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
