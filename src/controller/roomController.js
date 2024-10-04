@@ -17,8 +17,9 @@ exports.createRoomAndRoomType = async (req, res) => {
     description,
     maxOccupancy,
     pricePerNight,
-    amenities
+    amenities,
   } = req.body;
+
 
   // Check for missing required fields for both Room and RoomType
   if (!hotel || !rooms || !roomTypeName || !maxOccupancy || !pricePerNight) {
@@ -28,7 +29,6 @@ exports.createRoomAndRoomType = async (req, res) => {
   // Handle multiple photos for RoomType from the request
   const photos = req.files; // Assuming photos are sent as multipart/form-data
   let photoUrls = [];
-
   try {
     // Upload photos if provided
     if (photos && photos.length > 0) {
@@ -83,13 +83,17 @@ exports.createRoomAndRoomType = async (req, res) => {
 
 exports.getAllRooms = async (req, res) => {
   try {
+    // Check if the hotel query parameter is provided
+    if (!req.query.hotelId) {
+      return res.status(400).json({ message: 'Hotel Id is required' });
+    }
+
     // Extract filters from query parameters
     const filters = {};
 
-    // Filter by hotel if provided
-    if (req.query.hotel) {
-      filters.hotel = req.query.hotel; // Assuming hotel is an ObjectId
-    }
+    // Hotel filter (mandatory)
+    filters.hotel = req.query.hotelId; // Assuming hotel is an ObjectId
+
     // Filter by room type if provided
     if (req.query.type) {
       const roomType = await RoomType.findOne({ name: req.query.type });
@@ -97,14 +101,17 @@ exports.getAllRooms = async (req, res) => {
         filters.type = roomType._id; // Use ObjectId of RoomType
       }
     }
+
     // Filter by price per night if provided
     if (req.query.pricePerNight) {
       filters.pricePerNight = { $lte: Number(req.query.pricePerNight) }; // Max price filter
     }
+
     // Filter by status if provided
     if (req.query.status) {
       filters.status = req.query.status; // Valid statuses: 'available', 'booked', 'maintenance'
     }
+
     // Filter by max occupancy if provided
     if (req.query.maxOccupancy) {
       filters.maxOccupancy = { $gte: Number(req.query.maxOccupancy) }; // Min occupancy filter

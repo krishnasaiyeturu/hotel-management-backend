@@ -12,15 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Jayvirrathi/node-mongodb-rest-api.git"
+    "url": ""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Jayvirrathi/node-mongodb-rest-api/issues"
-  },
-  "homepage": "https://github.com/Jayvirrathi/node-mongodb-rest-api#readme",
   "dependencies": {
     "@sendinblue/client": "^3.3.1",
     "aws-sdk": "^2.1691.0",
