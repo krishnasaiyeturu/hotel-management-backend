@@ -11,6 +11,7 @@ router.post('/check-availability', bookingsController.checkAvailability);
 router.get('/', bookingsController.getBookingDetails);
 router.post('/calculate-total-price', bookingsController.calculateTotalPrice);
 router.put('/check-in/:bookingId', bookingsController.UpdateCheckIn);
+router.get('/:bookingId', bookingsController.getBookingById);
 
 
 
