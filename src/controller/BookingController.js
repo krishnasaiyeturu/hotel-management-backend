@@ -308,6 +308,7 @@ exports.calculateTotalPrice = async (req, res) => {
     return res.status(200).json({
       pricePerNight: roomType.pricePerNight,
       nights,
+      taxRate:`${taxRate*100}%`,
       totalPriceBeforeTax:totalPriceBeforeTax.toFixed(2),
       taxAmount,
       totalPriceAfterTax
