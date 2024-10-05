@@ -27,5 +27,6 @@ module.exports = {
         amenities: ['Free Wi-Fi', 'Pool', 'Gym', 'Spa'],
         rating: 4.2,
       },
+    TAX_RATE:0.18,
   };
   

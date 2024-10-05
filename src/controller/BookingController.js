@@ -4,6 +4,7 @@ const Room = require('../models/Room');
 const RoomType = require('../models/RoomType');
 const Guest = require('../models/Guest');
 const s3 = require('../utils/s3');
+const { TAX_RATE } = require('../utils/constants');
 
 
 exports.createBooking = async (req, res) => {
@@ -245,6 +246,61 @@ exports.checkAvailability = async (req, res) => {
       availabilityTypes:availabilityStatus,
     });
 
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+exports.calculateTotalPrice = async (req, res) => {
+  try {
+    const { checkIn, checkOut, hotelType, rooms } = req.body;
+
+    // Validate input
+    if (!checkIn || !checkOut || !hotelType || !rooms) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    // Find the room type to calculate total price
+    const roomType = await RoomType.findById(hotelType);
+    if (!roomType) {
+      return res.status(404).json({ message: 'Room type not found.' });
+    }
+
+    // Calculate the number of nights
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24); // Convert milliseconds to days
+
+    if (nights <= 0) {
+      return res.status(400).json({ message: 'Check-out date must be after check-in date.' });
+    }
+
+    // Calculate total price before tax
+    const totalPriceBeforeTax = roomType.pricePerNight * rooms * nights;
+
+    const taxRate = TAX_RATE;
+
+    // Calculate total tax amount
+    const taxAmount = (totalPriceBeforeTax * taxRate).toFixed(2);
+
+    // Calculate total price after tax
+    const totalPriceAfterTax = (parseFloat(totalPriceBeforeTax) + parseFloat(taxAmount)).toFixed(2);
+
+
+    console.log("Total Price Before Tax:", totalPriceBeforeTax);
+    console.log("Tax Amount:", taxAmount);
+    console.log("Total Price After Tax:", totalPriceAfterTax);
+
+    // Respond with the total price
+    return res.status(200).json({
+      pricePerNight: roomType.pricePerNight,
+      nights,
+      totalPriceBeforeTax:totalPriceBeforeTax.toFixed(2),
+      taxAmount,
+      totalPriceAfterTax
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server error', error: error.message });
