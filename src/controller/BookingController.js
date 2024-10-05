@@ -70,10 +70,10 @@ exports.createBooking = async (req, res) => {
         const taxRate = TAX_RATE;
 
         // Calculate total tax amount
-        const taxAmount = (totalPriceBeforeTax * taxRate).toFixed(2);
+      const taxAmount = totalPriceBeforeTax * taxRate;
 
-        // Calculate total price after tax
-        const totalPriceAfterTax = (parseFloat(totalPriceBeforeTax) + parseFloat(taxAmount)).toFixed(2);
+      // Calculate total price after tax
+      const totalPriceAfterTax = totalPriceBeforeTax + taxAmount;
 
 
         // Check if the guest already exists by email
@@ -106,8 +106,8 @@ exports.createBooking = async (req, res) => {
       numberOfChildren: children,
       checkInDate: checkInDate,
       checkOutDate: checkOutDate,
-      totalPrice:totalPriceBeforeTax.toFixed(2),
-      totalPriceAfterTax,
+      totalPrice: parseFloat(totalPriceBeforeTax.toFixed(2)), // Convert to float with 2 decimals
+      totalPriceAfterTax: parseFloat(totalPriceAfterTax.toFixed(2)), // Convert to float with 2 decimals
       bookingSource: 'online', // Assuming default; adjust as needed
       bookingChannel: 'website', // Assuming default; adjust as needed
     });
@@ -294,10 +294,10 @@ exports.calculateTotalPrice = async (req, res) => {
     const taxRate = TAX_RATE;
 
     // Calculate total tax amount
-    const taxAmount = (totalPriceBeforeTax * taxRate).toFixed(2);
+    const taxAmount = totalPriceBeforeTax * taxRate;
 
     // Calculate total price after tax
-    const totalPriceAfterTax = (parseFloat(totalPriceBeforeTax) + parseFloat(taxAmount)).toFixed(2);
+    const totalPriceAfterTax = totalPriceBeforeTax + taxAmount;
 
 
     console.log("Total Price Before Tax:", totalPriceBeforeTax);
@@ -309,9 +309,9 @@ exports.calculateTotalPrice = async (req, res) => {
       pricePerNight: roomType.pricePerNight,
       nights,
       taxRate:`${taxRate*100}%`,
-      totalPriceBeforeTax:totalPriceBeforeTax.toFixed(2),
-      taxAmount,
-      totalPriceAfterTax
+      totalPriceBeforeTax:parseFloat(totalPriceBeforeTax.toFixed(2)),
+      taxAmount:parseFloat(taxAmount.toFixed(2)),
+      totalPriceAfterTax:parseFloat(totalPriceAfterTax.toFixed(2))
     });
   } catch (error) {
     console.error(error);
