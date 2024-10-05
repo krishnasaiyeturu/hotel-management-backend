@@ -4,6 +4,7 @@ const Room = require('../models/Room');
 const RoomType = require('../models/RoomType');
 const Guest = require('../models/Guest');
 const s3 = require('../utils/s3');
+const mongoose = require('mongoose');
 const { TAX_RATE } = require('../utils/constants');
 
 
@@ -318,6 +319,142 @@ exports.calculateTotalPrice = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
+exports.getBookingDetails = async (req, res) => {
+  try {
+    const { hotelId, year, month, status } = req.query;
+
+    // Step 1: Fetch all rooms for the given hotelId
+    const rooms = await Room.find({ hotel: hotelId }).select('_id roomNumber').exec();
+
+    if (rooms.length === 0) {
+      return res.status(404).json({ message: 'No rooms found for the specified hotel' });
+    }
+
+    // Step 2: Define date range for the specified month and year
+    const startDate = new Date(year, month - 1, 1); // Month is 0-indexed
+    const endDate = new Date(year, month, 0); // Last day of the month
+    startDate.setDate(startDate.getDate() + 1);
+    endDate.setDate(endDate.getDate() + 1);
+    console.log(startDate,endDate);
+
+    // Step 3: Fetch bookings within the specified date range and status
+    const bookingsQuery = {
+      status: status,
+      $or: [
+        { checkInDate: { $gte: startDate, $lt: endDate } },
+        { checkOutDate: { $gt: startDate, $lte: endDate } },
+      ],
+    };
+    
+    // Fetch bookings without room for "booked" status
+    let bookings;
+    if (status === 'booked') {
+      bookings = await Booking.find(bookingsQuery)
+        .populate({
+          path: 'guest',
+          select: 'firstName lastName', // Only select guest's name
+        })
+        .exec();
+    } else {
+      // For "checked-in" or "checked-out" status, include the room
+      bookings = await Booking.find(bookingsQuery)
+        .populate({
+          path: 'guest',
+          select: 'firstName lastName', // Only select guest's name
+        })
+        .populate({
+          path: 'room',
+          select: 'roomNumber', // Select room number
+        })
+        .exec();
+    }
+    
+
+    // console.log(bookings);
+
+    // Step 4: Format the response
+    const response = bookings.map(booking => {
+      let roomNumber = null;
+
+      // For check-in or check-out status, show room number
+      if (['checked-in', 'checked-out'].includes(booking.status) && booking.room) {
+        roomNumber = booking.room.roomNumber;
+      }
+
+      return {
+        roomNumber: roomNumber, // null for booked, actual number for checkin/checkout
+        bookings: [
+          {
+            _id:booking._id,
+            name: `${booking.guest.firstName} ${booking.guest.lastName}`,
+            checkin: booking.checkInDate.getDate(),
+            checkout: booking.checkOutDate.getDate()
+          }
+        ]
+      };
+    });
+
+    return res.json(response);
+
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+
+};
+
+
+exports.UpdateCheckIn = async (req, res) => {
+  const { bookingId } = req.params;
+  const { roomId } = req.body; // Expecting status and roomId in the request body
+  try {
+
+      // Validate input
+      if (!bookingId || !roomId) {
+        return res.status(400).json({ message: 'All fields are required.' });
+      }
+
+         // Log the bookingId for debugging
+    console.log('Booking ID:', bookingId);
+
+    // Find the booking by bookingId
+    const booking = await Booking.findOne({ _id:bookingId });
+
+    // If booking is not found
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+
+
+      const room = await Room.findById(roomId); // Check if the room exists
+
+      // If the room is not found
+      if (!room) {
+        return res.status(404).json({ message: 'Room not found.' });
+      }
+
+      // Check if the room is available
+      if (room.status !== 'available') {
+        return res.status(400).json({ message: 'Room is not available for assignment.' });
+      }
+
+      booking.room = roomId; // Assign room
+      room.status = 'booked'; // Optionally, change the room status to 'booked'
+      booking.status = 'checked-in';// Update the booking status
+
+      await room.save(); // Save the updated room status
+      await booking.save();// Save the updated booking
+    
+
+    // Respond with the updated booking
+    return res.status(200).json({ message: 'Check-In updated successfully.', booking });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'An error occurred while updating the booking.', error });
+  }
+}
+  
 
 
 
