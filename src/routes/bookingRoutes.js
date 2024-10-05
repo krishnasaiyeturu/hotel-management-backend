@@ -9,7 +9,7 @@ const bookingsController = require('../controller/BookingController');
 router.post('/', bookingsController.createBooking);
 router.post('/check-availability', bookingsController.checkAvailability);
 router.get('/', bookingsController.getAllBookings);
-router.get('/calculate-total-price', bookingsController.calculateTotalPrice);
+router.post('/calculate-total-price', bookingsController.calculateTotalPrice);
 
 
 
