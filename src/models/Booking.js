@@ -67,8 +67,17 @@ const BookingSchema = new mongoose.Schema({
   totalPrice: {
     type: Number,
     required: true,
-    min: [0, 'Total price cannot be negative.'] // Minimum total price of 0
+    min: [0, 'Total price cannot be negative.'],
+    get: v => parseFloat(v.toFixed(2)), // Ensure it returns as a float with 2 decimals
+    set: v => parseFloat(v.toFixed(2))  // Ensure it is stored as a float with 2 decimals
   },
+  totalPriceAfterTax: {
+    type: Number,
+    required: true,
+    min: [0, 'Total price cannot be negative.'],
+    get: v => parseFloat(v.toFixed(2)), // Ensure it returns as a float with 2 decimals
+    set: v => parseFloat(v.toFixed(2))  // Ensure it is stored as a float with 2 decimals
+  },  
   status: {
     type: String,
     enum: BOOKING_STATUS,

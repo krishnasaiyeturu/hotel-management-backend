@@ -62,9 +62,19 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Check-out date must be after check-in date.' });
     }
 
-    console.log("totalPrice",roomType.pricePerNight,rooms,nights);
+        console.log("totalPrice",roomType.pricePerNight,rooms,nights);
 
-    const totalPrice = roomType.pricePerNight * rooms * nights;
+        // Calculate total price before tax
+        const totalPriceBeforeTax = roomType.pricePerNight * rooms * nights;
+
+        const taxRate = TAX_RATE;
+
+        // Calculate total tax amount
+        const taxAmount = (totalPriceBeforeTax * taxRate).toFixed(2);
+
+        // Calculate total price after tax
+        const totalPriceAfterTax = (parseFloat(totalPriceBeforeTax) + parseFloat(taxAmount)).toFixed(2);
+
 
         // Check if the guest already exists by email
         let guest = await Guest.findOne({ email: guestInformation.email });
@@ -96,7 +106,8 @@ exports.createBooking = async (req, res) => {
       numberOfChildren: children,
       checkInDate: checkInDate,
       checkOutDate: checkOutDate,
-      totalPrice,
+      totalPrice:totalPriceBeforeTax.toFixed(2),
+      totalPriceAfterTax,
       bookingSource: 'online', // Assuming default; adjust as needed
       bookingChannel: 'website', // Assuming default; adjust as needed
     });
