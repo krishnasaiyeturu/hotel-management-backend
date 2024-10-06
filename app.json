@@ -6,16 +6,10 @@
       "exec_mode"      : "fork",
       "instances"      : 1,
       "env_development": {
-        "PORT": "4000",
-      "MONGO_URI": "mongodb://localhost:27017/hotel",
-      "JWT_SECRET": "hello_world_test",
-      "JWT_EXPIRE": "7d"
+        "NODE_ENV": "development"
 	 },
       "env_production" : {
-      "PORT": "4000",
-      "MONGO_URI": "mongodb://localhost:27017/hotel_prod",
-      "JWT_SECRET": "hello_world_test",
-      "JWT_EXPIRE": "7d"
+        "NODE_ENV": "production"
       }
     }
   ]
