@@ -32,6 +32,10 @@ const startServer = async () => {
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+
+  mongoose.set('strictPopulate', false);
+
+
   app.use(morgan('dev'));
   app.use(helmet());
   app.use(cors());
