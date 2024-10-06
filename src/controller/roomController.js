@@ -153,7 +153,7 @@ exports.getAllRooms = async (req, res) => {
     // Send response with rooms including presigned photo URLs
     res.status(200).json(roomsWithPresignedUrls);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error 5', error: error.message });
   }
 };
 
@@ -210,7 +210,7 @@ exports.getRoomStatusCounts = async (req, res) => {
     res.status(200).json(response);
     
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Server error 6", error: error.message });
   }
 };
 
@@ -258,7 +258,7 @@ exports.getRoomTypeById = async (req, res) => {
 
     res.status(200).json(roomTypeWithPresignedUrls);
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Server error 7", error: error.message });
   }
 };
 
@@ -307,6 +307,6 @@ exports.getAllRoomTypes = async (req, res) => {
 
     res.status(200).json(roomTypesWithPresignedUrls);
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Server error 8", error: error.message });
   }
 };

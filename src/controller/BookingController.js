@@ -124,7 +124,7 @@ exports.createBooking = async (req, res) => {
     res.status(201).json(newBooking);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error 1', error: error.message });
   }
 };
 
@@ -219,7 +219,7 @@ exports.checkAvailability = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+    return res.status(500).json({ message: 'Server error 2', error: error.message });
   }
 };
 
@@ -275,7 +275,7 @@ exports.calculateTotalPrice = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+    return res.status(500).json({ message: 'Server error 3', error: error.message });
   }
 };
 
