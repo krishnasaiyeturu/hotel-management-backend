@@ -309,7 +309,7 @@ exports.getBookingDetails = async (req, res) => {
     
     // Fetch bookings without room for "booked" status
     let bookings;
-    if (status === 'booked' && status === 'no-show') {
+    if (status === 'booked' || status === 'no-show') {
       bookings = await Booking.find(bookingsQuery)
         .populate({
           path: 'guest',
