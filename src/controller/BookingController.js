@@ -282,80 +282,80 @@ exports.calculateTotalPrice = async (req, res) => {
 
 exports.getBookingDetails = async (req, res) => {
   try {
-    // const { hotelId, year, month, status } = req.query;
+    const { hotelId, year, month, status } = req.query;
 
-    // // Step 1: Fetch all rooms for the given hotelId
-    // const rooms = await Room.find({ hotel: hotelId }).select('_id roomNumber').exec();
+    // Step 1: Fetch all rooms for the given hotelId
+    const rooms = await Room.find({ hotel: hotelId }).select('_id roomNumber').exec();
 
-    // if (rooms.length === 0) {
-    //   return res.status(404).json({ message: 'No rooms found for the specified hotel' });
-    // }
+    if (rooms.length === 0) {
+      return res.status(404).json({ message: 'No rooms found for the specified hotel' });
+    }
 
-    // // Step 2: Define date range for the specified month and year
-    // const startDate = new Date(year, month - 1, 1); // Month is 0-indexed
-    // const endDate = new Date(year, month, 0); // Last day of the month
-    // startDate.setDate(startDate.getDate() + 1);
-    // endDate.setDate(endDate.getDate() + 1);
-    // console.log(startDate,endDate);
+    // Step 2: Define date range for the specified month and year
+    const startDate = new Date(year, month - 1, 1); // Month is 0-indexed
+    const endDate = new Date(year, month, 0); // Last day of the month
+    startDate.setDate(startDate.getDate() + 1);
+    endDate.setDate(endDate.getDate() + 1);
+    console.log(startDate,endDate);
 
-    // // Step 3: Fetch bookings within the specified date range and status
-    // const bookingsQuery = {
-    //   status: status,
-    //   $or: [
-    //     { checkInDate: { $gte: startDate, $lt: endDate } },
-    //     { checkOutDate: { $gt: startDate, $lte: endDate } },
-    //   ],
-    // };
+    // Step 3: Fetch bookings within the specified date range and status
+    const bookingsQuery = {
+      status: status,
+      $or: [
+        { checkInDate: { $gte: startDate, $lt: endDate } },
+        { checkOutDate: { $gt: startDate, $lte: endDate } },
+      ],
+    };
     
-    // // Fetch bookings without room for "booked" status
-    // let bookings;
-    // if (status === 'booked' && status === 'no-show') {
-    //   bookings = await Booking.find(bookingsQuery)
-    //     .populate({
-    //       path: 'guest',
-    //       select: 'firstName lastName', // Only select guest's name
-    //     })
-    //     .exec();
-    // } else {
-    //   // For "checked-in" or "checked-out" status, include the room
-    //   bookings = await Booking.find(bookingsQuery)
-    //     .populate({
-    //       path: 'guest',
-    //       select: 'firstName lastName', // Only select guest's name
-    //     })
-    //     .populate({
-    //       path: 'room',
-    //       select: 'roomNumber', // Select room number
-    //     })
-    //     .exec();
-    // }
+    // Fetch bookings without room for "booked" status
+    let bookings;
+    if (status === 'booked' && status === 'no-show') {
+      bookings = await Booking.find(bookingsQuery)
+        .populate({
+          path: 'guest',
+          select: 'firstName lastName', // Only select guest's name
+        })
+        .exec();
+    } else {
+      // For "checked-in" or "checked-out" status, include the room
+      bookings = await Booking.find(bookingsQuery)
+        .populate({
+          path: 'guest',
+          select: 'firstName lastName', // Only select guest's name
+        })
+        .populate({
+          path: 'room',
+          select: 'roomNumber', // Select room number
+        })
+        .exec();
+    }
     
 
-    // // console.log(bookings);
+    // console.log(bookings);
 
-    // // Step 4: Format the response
-    // const response = bookings.map(booking => {
-    //   let roomNumber = null;
+    // Step 4: Format the response
+    const response = bookings.map(booking => {
+      let roomNumber = null;
 
-    //   // For check-in or check-out status, show room number
-    //   if (['checked-in', 'checked-out'].includes(booking.status) && booking.room) {
-    //     roomNumber = booking.room.roomNumber;
-    //   }
+      // For check-in or check-out status, show room number
+      if (['checked-in', 'checked-out'].includes(booking.status) && booking.room) {
+        roomNumber = booking.room.roomNumber;
+      }
 
-    //   return {
-    //     roomNumber: roomNumber, // null for booked, actual number for checkin/checkout
-    //     bookings: [
-    //       {
-    //         _id:booking._id,
-    //         name: `${booking.guest.firstName} ${booking.guest.lastName}`,
-    //         checkin: booking.checkInDate.getDate(),
-    //         checkout: booking.checkOutDate.getDate()
-    //       }
-    //     ]
-    //   };
-    // });
+      return {
+        roomNumber: roomNumber, // null for booked, actual number for checkin/checkout
+        bookings: [
+          {
+            _id:booking._id,
+            name: `${booking.guest.firstName} ${booking.guest.lastName}`,
+            checkin: booking.checkInDate.getDate(),
+            checkout: booking.checkOutDate.getDate()
+          }
+        ]
+      };
+    });
 
-    return res.json(req.query);
+    return res.json(response);
 
   } catch (error) {
     console.error(error);
