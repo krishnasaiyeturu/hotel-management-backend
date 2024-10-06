@@ -28,12 +28,12 @@ const startServer = async () => {
   const app = express();
 
   // await mongoose.connect(process.env.MONGO_URI);
+  mongoose.set('strictPopulate', false);
   await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 
-  mongoose.set('strictPopulate', false);
 
 
   app.use(morgan('dev'));
