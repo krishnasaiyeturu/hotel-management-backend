@@ -525,10 +525,9 @@ exports.getBookingById = async (req, res) => {
         });
       }
 
-
       // Find available rooms for the roomType (assumed available status is stored in room model)
     const availableRooms = await Room.find({
-      roomType: booking.roomType._id,
+      type: booking.roomType._id,
       status:"available"
     });
 
