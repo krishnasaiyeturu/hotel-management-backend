@@ -408,7 +408,7 @@ exports.UpdateCheckIn = async (req, res) => {
     }
 
     // Assign all the rooms to the booking
-    booking.rooms = roomIds; // Assuming 'rooms' is the field in the booking schema for multiple rooms
+    booking.room = roomIds; // Assuming 'room' is the field in the booking schema for multiple rooms
     booking.status = 'checked-in'; // Update the booking status to checked-in
 
     // Update the status of each room to 'booked'
