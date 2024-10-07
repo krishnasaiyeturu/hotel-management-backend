@@ -17,11 +17,16 @@ const BookingSchema = new mongoose.Schema({
     ref: 'RoomType',
     required: true
   },
-  room: {
+  // room: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Room',
+  //   required: false // Initially, room is unassigned. Assign during check-in.
+  // },
+  room: [{ 
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Room',
-    required: false // Initially, room is unassigned. Assign during check-in.
-  },
+    required: false // Initially, no rooms are assigned
+  }],
   numberOfRooms: {
     type: Number,
     required: true,

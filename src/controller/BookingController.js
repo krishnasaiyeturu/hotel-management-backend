@@ -367,45 +367,54 @@ exports.getCalenderBookingDetails = async (req, res) => {
 
 exports.UpdateCheckIn = async (req, res) => {
   const { bookingId } = req.params;
-  const { roomId } = req.body; // Expecting status and roomId in the request body
+  const { roomIds } = req.body; // Expecting status and roomIds as an array in the request body
   try {
+    // Validate input
+    if (!bookingId || !Array.isArray(roomIds) || roomIds.length === 0) {
+      return res.status(400).json({ message: 'Booking ID and roomIds are required.' });
+    }
 
-      // Validate input
-      if (!bookingId || !roomId) {
-        return res.status(400).json({ message: 'All fields are required.' });
-      }
-
-         // Log the bookingId for debugging
+    // Log the bookingId for debugging
     console.log('Booking ID:', bookingId);
 
     // Find the booking by bookingId
-    const booking = await Booking.findOne({ _id:bookingId });
+    const booking = await Booking.findOne({ _id: bookingId });
 
     // If booking is not found
     if (!booking) {
       return res.status(400).json({ message: 'Booking not found.' });
     }
 
-
+    // Check each room
+    const availableRooms = [];
+    for (let roomId of roomIds) {
       const room = await Room.findById(roomId); // Check if the room exists
 
       // If the room is not found
       if (!room) {
-        return res.status(400).json({ message: 'Room not found.' });
+        return res.status(400).json({ message: `Room with ID ${roomId} not found.` });
       }
 
       // Check if the room is available
       if (room.status !== 'available') {
-        return res.status(400).json({ message: 'Room is not available for assignment.' });
+        return res.status(400).json({ message: `Room with ID ${roomId} is not available for assignment.` });
       }
 
-      booking.room = roomId; // Assign room
-      room.status = 'booked'; // Optionally, change the room status to 'booked'
-      booking.status = 'checked-in';// Update the booking status
+      // Add the room to the available rooms list
+      availableRooms.push(room);
+    }
 
-      await room.save(); // Save the updated room status
-      await booking.save();// Save the updated booking
-    
+    // Assign all the rooms to the booking
+    booking.rooms = roomIds; // Assuming 'rooms' is the field in the booking schema for multiple rooms
+    booking.status = 'checked-in'; // Update the booking status to checked-in
+
+    // Update the status of each room to 'booked'
+    for (let room of availableRooms) {
+      room.status = 'booked';
+      await room.save(); // Save each room's status
+    }
+
+    await booking.save(); // Save the updated booking
 
     // Respond with the updated booking
     return res.status(200).json({ message: 'Check-In updated successfully.', booking });
@@ -413,8 +422,66 @@ exports.UpdateCheckIn = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: 'An error occurred while updating the booking.', error });
   }
-}
-  
+};
+
+
+exports.UpdateCheckOut = async (req, res) => {
+  const { bookingId } = req.params;
+
+  try {
+    // Validate input
+    if (!bookingId) {
+      return res.status(400).json({ message: 'Booking ID is required.' });
+    }
+
+    // Log the bookingId for debugging
+    console.log('Booking ID:', bookingId);
+
+    // Find the booking by bookingId
+    const booking = await Booking.findOne({ _id: bookingId });
+
+    // If booking is not found
+    if (!booking) {
+      return res.status(400).json({ message: 'Booking not found.' });
+    }
+
+    // Check if the booking is already checked-out
+    if (booking.status === 'checked-out') {
+      return res.status(400).json({ message: 'Booking is already checked out.' });
+    }
+
+    // Retrieve the rooms associated with the booking
+    const rooms = booking.room; // Assuming 'room' is the field holding the room IDs
+
+    if (!rooms || rooms.length === 0) {
+      return res.status(400).json({ message: 'No rooms associated with this booking.' });
+    }
+
+    // Update the status of each room to 'available'
+    for (let roomId of rooms) {
+      const room = await Room.findById(roomId);
+
+      if (!room) {
+        return res.status(400).json({ message: `Room with ID ${roomId} not found.` });
+      }
+
+      room.status = 'available';
+      await room.save(); // Save each room's status
+    }
+
+    // Update the booking status to 'checked-out'
+    booking.status = 'checked-out';
+    await booking.save(); // Save the updated booking
+
+    // Respond with the updated booking
+    return res.status(200).json({ message: 'Check-Out updated successfully.', booking });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'An error occurred while updating the booking.', error });
+  }
+};
+
+
 
 
 exports.getBookingById = async (req, res) => {
