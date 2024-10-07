@@ -100,7 +100,7 @@ exports.getAllRooms = async (req, res) => {
     }
 
     // Apply hotelId filter
-    filters.hotel = mongoose.Types.ObjectId(req.query.hotelId);
+    filters.hotel =new mongoose.Types.ObjectId(req.query.hotelId);
 
     // Filter by room type if provided
     if (req.query.type) {
@@ -153,7 +153,7 @@ exports.getAllRooms = async (req, res) => {
     // Send response with rooms including presigned photo URLs
     res.status(200).json(roomsWithPresignedUrls);
   } catch (error) {
-    res.status(500).json({ message: 'Server error 5', error: error.message });
+    res.status(500).json({ message: 'Failed to fetch room information', error: error.message });
   }
 };
 
@@ -174,7 +174,7 @@ exports.getRoomStatusCounts = async (req, res) => {
     }
 
     // Apply hotelId filter
-    filters.hotel = mongoose.Types.ObjectId(req.query.hotelId);
+    filters.hotel = new mongoose.Types.ObjectId(req.query.hotelId);
 
     // Aggregate rooms by status and count the number of rooms for each status
     const statusCounts = await Room.aggregate([
@@ -210,13 +210,12 @@ exports.getRoomStatusCounts = async (req, res) => {
     res.status(200).json(response);
     
   } catch (error) {
-    res.status(500).json({ message: "Server error 6", error: error.message });
+    res.status(500).json({ message: "Failed to fetch room count information", error: error.message });
   }
 };
 
 
 // Get specific room Type by ID
-// roomTypeController.js
 exports.getRoomTypeById = async (req, res) => {
   try {
     const roomTypeId = req.params.roomTypeId;
@@ -237,7 +236,7 @@ exports.getRoomTypeById = async (req, res) => {
 
     // If room type not found
     if (!roomType) {
-      return res.status(404).json({ message: "Room Type not found" });
+      return res.status(400).json({ message: "Room Type not found" });
     }
 
     // Generate pre-signed URLs for each room type's photos
@@ -258,10 +257,9 @@ exports.getRoomTypeById = async (req, res) => {
 
     res.status(200).json(roomTypeWithPresignedUrls);
   } catch (error) {
-    res.status(500).json({ message: "Server error 7", error: error.message });
+    res.status(500).json({ message: "Failed to fetch room type information", error: error.message });
   }
 };
-
 
 
 exports.getRoomTypes = async (req, res) => {
@@ -276,7 +274,9 @@ exports.getRoomTypes = async (req, res) => {
   
 };
 
-exports.getAllRoomTypes = async (req, res) => {
+
+// Get All Rooms for pu
+exports.getAllPublicRooms = async (req, res) => {
   try {
     const filters = {};
 
@@ -307,6 +307,6 @@ exports.getAllRoomTypes = async (req, res) => {
 
     res.status(200).json(roomTypesWithPresignedUrls);
   } catch (error) {
-    res.status(500).json({ message: "Server error 8", error: error.message });
+    res.status(500).json({ message: "Failed to load rooms.Please try again", error: error.message });
   }
 };

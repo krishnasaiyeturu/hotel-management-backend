@@ -30,7 +30,7 @@ exports.createBooking = async (req, res) => {
     // Find the room type to calculate total price
     const roomType = await RoomType.findById(hotelType);
     if (!roomType) {
-      return res.status(404).json({ message: 'Room type not found.' });
+      return res.status(400).json({ message: 'Room type not found.' });
     }
 
     // Find all rooms of the selected room type
@@ -236,7 +236,7 @@ exports.calculateTotalPrice = async (req, res) => {
     // Find the room type to calculate total price
     const roomType = await RoomType.findById(hotelType);
     if (!roomType) {
-      return res.status(404).json({ message: 'Room type not found.' });
+      return res.status(400).json({ message: 'Room type not found.' });
     }
 
     // Calculate the number of nights
@@ -280,7 +280,7 @@ exports.calculateTotalPrice = async (req, res) => {
 };
 
 
-exports.getBookingDetails = async (req, res) => {
+exports.getCalenderBookingDetails = async (req, res) => {
   try {
     const { hotelId, year, month, status } = req.query;
 
@@ -288,7 +288,7 @@ exports.getBookingDetails = async (req, res) => {
     const rooms = await Room.find({ hotel: hotelId }).select('_id roomNumber').exec();
 
     if (rooms.length === 0) {
-      return res.status(404).json({ message: 'No rooms found for the specified hotel' });
+      return res.status(400).json({ message: 'No rooms found for the specified hotel' });
     }
 
     // Step 2: Define date range for the specified month and year
@@ -348,8 +348,8 @@ exports.getBookingDetails = async (req, res) => {
           {
             _id:booking._id,
             name: `${booking.guest.firstName} ${booking.guest.lastName}`,
-            checkin: booking.checkInDate.getDate(),
-            checkout: booking.checkOutDate.getDate()
+            checkin: booking.checkInDate,
+            checkout: booking.checkOutDate
           }
         ]
       };
@@ -383,7 +383,7 @@ exports.UpdateCheckIn = async (req, res) => {
 
     // If booking is not found
     if (!booking) {
-      return res.status(404).json({ message: 'Booking not found.' });
+      return res.status(400).json({ message: 'Booking not found.' });
     }
 
 
@@ -391,7 +391,7 @@ exports.UpdateCheckIn = async (req, res) => {
 
       // If the room is not found
       if (!room) {
-        return res.status(404).json({ message: 'Room not found.' });
+        return res.status(400).json({ message: 'Room not found.' });
       }
 
       // Check if the room is available
@@ -438,7 +438,7 @@ exports.getBookingById = async (req, res) => {
 
     // If booking is not found
     if (!booking) {
-      return res.status(404).json({ message: 'Booking not found or status does not match.' });
+      return res.status(400).json({ message: 'Booking not found or status does not match.' });
     }
         // The S3 bucket name from your environment or hard-coded value
         const bucketName = S3_BUCKET_NAME;

@@ -4,7 +4,7 @@ const bookingsController = require('../controller/BookingController');
 
 
 // Create a booking
-router.get('/', bookingsController.getBookingDetails);
+router.get('/', bookingsController.getCalenderBookingDetails);
 router.post('/', bookingsController.createBooking);
 router.post('/check-availability', bookingsController.checkAvailability);
 router.post('/calculate-total-price', bookingsController.calculateTotalPrice);

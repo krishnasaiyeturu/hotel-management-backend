@@ -66,7 +66,7 @@ exports.getAllHotels = async (req, res) => {
 
     // If no hotels found
     if (!hotels || hotels.length === 0) {
-      return res.status(404).json({ message: 'No hotels found' });
+      return res.status(400).json({ message: 'No hotels found' });
     }
 
     // Respond with the list of hotels (only ID and name)
