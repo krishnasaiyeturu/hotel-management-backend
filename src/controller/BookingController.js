@@ -32,10 +32,11 @@ exports.createBooking = async (req, res) => {
     if (!roomType) {
       return res.status(400).json({ message: 'Room type not found.' });
     }
-
+    console.log(roomType);
     // Find all rooms of the selected room type
-    const totalRooms = await Room.find({ roomType: hotelType }).select('_id');
+    const totalRooms = await Room.find({ type: roomType._id }).select('_id');
 
+    console.log(totalRooms);
     // Find bookings that overlap with the requested check-in and check-out dates
     const overlappingBookings = await Booking.find({
       roomType: hotelType,
@@ -47,9 +48,11 @@ exports.createBooking = async (req, res) => {
 
     // Sum up the number of rooms booked in the overlapping bookings
     const bookedRoomCount = overlappingBookings.reduce((total, booking) => total + booking.numberOfRooms, 0);
+    console.log(totalRooms.length ,bookedRoomCount)
 
     // Calculate the number of rooms available by subtracting booked rooms from the total rooms
     const availableRooms = totalRooms.length - bookedRoomCount;
+    console.log(availableRooms,rooms)
 
     if (availableRooms < rooms) {
       return res.status(400).json({ message: 'Not enough rooms available for the selected dates.' });
@@ -169,7 +172,7 @@ exports.checkAvailability = async (req, res) => {
 
     for (const roomType of roomTypesWithPresignedUrls) {
       // Find total rooms for the current room type
-      const totalRooms = await Room.find({ roomType: roomType._id }).countDocuments();
+      const totalRooms = await Room.find({ type: roomType._id }).countDocuments();
 
       // Find bookings that overlap with the requested dates for the current room type
       const overlappingBookings = await Booking.find({
