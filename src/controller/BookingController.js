@@ -124,11 +124,15 @@ exports.createBooking = async (req, res) => {
     // Update guest's bookings array
     await Guest.findByIdAndUpdate(guest._id, { $push: { bookings: newBooking._id } });
 
+    const formattedcheckInDate = new Date(checkInDate);
+    const formattedcheckOutDate = new Date(checkOutDate);
+    
+    
     let emailValues= {
       userName:guestInformation.firstName +" "+ guestInformation.lastName,
       bookingCode:newBooking.bookingId,
-      checkIn:checkInDate,
-      checkOut:checkOutDate,
+      checkIn:formattedcheckInDate.toDateString(),
+      checkOut:formattedcheckOutDate.toDateString(),
       pricePerNight:roomType.pricePerNight,
       noOfRooms:rooms,
       noOfNights:nights,
