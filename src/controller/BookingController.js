@@ -7,7 +7,8 @@ const s3 = require('../utils/s3');
 const url = require('url'); 
 const mongoose = require('mongoose');
 const { TAX_RATE, S3_BUCKET_NAME } = require('../utils/constants');
-
+const { bookingConfirmation } = require('../email_template/booking_confirmation');
+const sendEmail = require('../utils/email');
 
 exports.createBooking = async (req, res) => {
   try {
@@ -123,6 +124,26 @@ exports.createBooking = async (req, res) => {
     // Update guest's bookings array
     await Guest.findByIdAndUpdate(guest._id, { $push: { bookings: newBooking._id } });
 
+    let emailValues= {
+      userName:guestInformation.firstName +" "+ guestInformation.lastName,
+      bookingCode:newBooking.bookingId,
+      checkIn:checkInDate,
+      checkOut:checkOutDate,
+      pricePerNight:roomType.pricePerNight,
+      noOfRooms:rooms,
+      noOfNights:nights,
+      totalGuests:adults+children,
+      roomType:roomType.name,
+      totalBeforeTax:totalPriceBeforeTax,
+      taxAmount: parseFloat(taxAmount.toFixed(2)),
+      totalAfterTax:totalPriceAfterTax,
+      guestName:guestInformation.firstName +" "+ guestInformation.lastName,
+      guestEmail:guestInformation.email
+    };
+
+    let email_content = bookingConfirmation(emailValues);
+
+    sendEmail(guestInformation.email,`Booking Confirmation ${newBooking.bookingId}`,email_content)
     // Respond with the created booking details
     res.status(201).json(newBooking);
   } catch (error) {
@@ -468,7 +489,7 @@ exports.UpdateCheckOut = async (req, res) => {
         return res.status(400).json({ message: `Room with ID ${roomId} not found.` });
       }
 
-      room.status = 'available';
+      room.status = 'available'; // this is should goto maintenance 
       await room.save(); // Save each room's status
     }
 
@@ -544,6 +565,7 @@ exports.getBookingById = async (req, res) => {
       ...booking._doc, // Use _doc to get the plain object from Mongoose document
       availableRooms: availableRoomsObj // Attach availableRooms array
     };
+
 
     // Respond with the booking details
     return res.status(200).json(response);

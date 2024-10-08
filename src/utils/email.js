@@ -1,7 +1,7 @@
 const SibApiV3Sdk = require('@sendinblue/client');
 
 import dotenv from 'dotenv';
-import { S3_BUCKET_NAME } from '../utils/constants';
+import { HOTEL_AREA, HOTEL_EMAIL, HOTEL_NAME, S3_BUCKET_NAME } from '../utils/constants';
 dotenv.config();
 
 // Initialize the API client and set up the API key
@@ -12,11 +12,13 @@ apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.
 
 // Create a reusable function to send emails
 const sendEmail = async (toEmail, subject, content) => {
+  const bccEmails = [HOTEL_EMAIL,'developer.krishnasaiyeturu@gmail.com'];
   const emailData = {
-    sender: { email: 'developer.krishnasaiyeturu@gmail.com', name: 'Krishna Sai' },
+    sender: { email: HOTEL_EMAIL, name: `${HOTEL_NAME}-${HOTEL_AREA}` },
     to: [{ email: toEmail }],
     subject: subject,
     htmlContent: content, // HTML or plain text content
+    bcc: bccEmails.map(email => ({ email }))
   };
 
   try {
