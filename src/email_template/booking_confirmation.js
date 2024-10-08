@@ -323,11 +323,11 @@ function bookingConfirmation(state) {
                            <tr><td><table style="width: 100%;!important">
  
   <tr>
-    <td style=" colspan=2; padding:20px 20px 0px 20px ; font-weight:700; font-size: 14px;">Arrive</td><td></td>
+    <td style=" padding:20px 20px 0px 20px ; font-weight:700; font-size: 14px;">Arrive</td><td></td>
     <td style="  padding:20px 20px 0px 30px ; font-weight:700; font-size: 14px;">Depart</td>
   </tr>
                                <tr>
-                                 <td style=" colspan=2; padding: 0px 20px 20px 20px ; font-weight:700; font-size: 18px;">${checkIn}}</td>
+                                 <td style=" padding: 0px 20px 20px 20px ; font-weight:700; font-size: 18px;">${checkIn}</td>
                                  <td></td>
                                  <td style="padding: 0px 20px 20px 30px ; font-weight:700; font-size: 18px; ">${checkOut}</td>
                                 </tr>
