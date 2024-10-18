@@ -20,7 +20,7 @@ exports.createPaymentSession = async (bookingId,amount, currency = 'usd') => {
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [{ price_data: { currency: currency, product_data: { name: 'Item' }, unit_amount: Math.round(amount * 100) }, quantity: 1, metadata: { bookingId: bookingId }, }],
+      line_items: [{ price_data: { currency: currency, product_data: { name: 'ROOM' }, unit_amount: Math.round(amount * 100) }, quantity: 1, metadata: { bookingId: bookingId }, }],
       mode: 'payment',
       success_url: 'http://localhost:5173/success',
       cancel_url: 'http://localhost:5173/cancel',
