@@ -62,7 +62,7 @@ const startServer = async () => {
         event = stripe.webhooks.constructEvent(
           req.body,
           sig,
-          process.env.STRIPE_SECRET_KEY// You will get this from the Stripe dashboard
+          process.env.STRIPE_WEB_HOOK_SECRET // You will get this from the Stripe dashboard
         );
       } catch (err) {
         console.error('Webhook signature verification failed:', err.message);
