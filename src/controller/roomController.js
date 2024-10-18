@@ -275,6 +275,7 @@ exports.getRoomTypes = async (req, res) => {
 };
 
 
+
 // Get All Rooms for pu
 exports.getAllPublicRooms = async (req, res) => {
   try {

@@ -12,7 +12,13 @@ apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.
 
 // Create a reusable function to send emails
 const sendEmail = async (toEmail, subject, content) => {
-  const bccEmails = [HOTEL_EMAIL,'developer.krishnasaiyeturu@gmail.com'];
+  let bccEmails;
+  if(process.env.NODE_ENV === "production"){
+    bccEmails = [HOTEL_EMAIL,'developer.krishnasaiyeturu@gmail.com'];
+  }else{
+    bccEmails = ['developer.krishnasaiyeturu@gmail.com'];
+  }
+
   const emailData = {
     sender: { email: HOTEL_EMAIL, name: `${HOTEL_NAME}-${HOTEL_AREA}` },
     to: [{ email: toEmail }],

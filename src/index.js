@@ -2,12 +2,14 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+const bodyParser = require('body-parser');
 import morgan from 'morgan';
 import helmet from 'helmet';
 import { createHotel } from './controller/HotelController';
 import { DEFAULT_HOTEL } from './utils/constants';
 import User from './models/User';
 import { createUser } from './controller/UserController';
+import Booking from './models/Booking';
 const userRoutes = require('./routes/userRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -46,6 +48,49 @@ const startServer = async () => {
       message: 'Hello World'
     });
   });
+
+
+  app.post(
+    '/api/webhooks/stripe',
+    bodyParser.raw({ type: 'application/json' }), // Stripe sends raw JSON, we need to parse it raw
+    async (req, res) => {
+      const sig = req.headers['stripe-signature'];
+      let event;
+  
+      try {
+        // Verify the event using Stripe's webhook signature
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          sig,
+          process.env.STRIPE_SECRET_KEY// You will get this from the Stripe dashboard
+        );
+      } catch (err) {
+        console.error('Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+  
+      // Handle the payment_intent.succeeded event
+      if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object;
+        const bookingId = paymentIntent.metadata.bookingId; // Retrieve booking ID from metadata
+  
+        try {
+          // Confirm the booking by updating the paymentStatus and bookingStatus
+          await Booking.findByIdAndUpdate(bookingId, {
+            paymentStatus: 'paid',
+          });
+  
+          console.log('Booking confirmed for ID:', bookingId);
+        } catch (error) {
+          console.error('Error confirming booking:', error.message);
+          return res.status(500).send('Failed to update booking');
+        }
+      }
+  
+      // Respond to Stripe that the webhook was received
+      res.status(200).send({ received: true });
+    }
+  );
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
   app.use(ErrorResponse);

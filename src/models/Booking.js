@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { BOOKING_STATUS } = require('../utils/constants');
+const { BOOKING_STATUS, PAYMENT_STATUS } = require('../utils/constants');
 
 
 const BookingSchema = new mongoose.Schema({
@@ -83,6 +83,11 @@ const BookingSchema = new mongoose.Schema({
     type: String,
     enum: BOOKING_STATUS,
     default: 'booked'
+  },
+  paymentStatus: {
+    type: String,
+    enum: PAYMENT_STATUS, // Add payment status
+    default: 'pending' // Default to 'pending'
   },
   bookingSource: {
     type: String,

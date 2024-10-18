@@ -15,6 +15,7 @@ module.exports = {
     ],
     ROOM_STATUS:['available', 'booked', 'maintenance'],
     BOOKING_STATUS: ['booked', 'checked-in', 'checked-out', 'canceled','no-show'],
+    PAYMENT_STATUS : ['pending', 'paid', 'failed', 'refunded'],
     DEFAULT_HOTEL:{
         name: 'ASPEN GRAND HOTELS',
         location: {

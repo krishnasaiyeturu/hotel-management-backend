@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const { TAX_RATE, S3_BUCKET_NAME } = require('../utils/constants');
 const { bookingConfirmation } = require('../email_template/booking_confirmation');
 const sendEmail = require('../utils/email');
+const { createPaymentIntent } = require('../utils/stripeService');
 
 exports.createBooking = async (req, res) => {
   try {
@@ -82,6 +83,11 @@ exports.createBooking = async (req, res) => {
       const totalPriceAfterTax = totalPriceBeforeTax + taxAmount;
 
 
+      if (!paymentIntentResult.success) {
+        return res.status(500).json({ message: 'Payment initiation failed', error: paymentIntentResult.error });
+      }
+
+
         // Check if the guest already exists by email
         let guest = await Guest.findOne({ email: guestInformation.email });
 
@@ -116,6 +122,7 @@ exports.createBooking = async (req, res) => {
       totalPriceAfterTax: parseFloat(totalPriceAfterTax.toFixed(2)), // Convert to float with 2 decimals
       bookingSource: 'online', // Assuming default; adjust as needed
       bookingChannel: 'website', // Assuming default; adjust as needed
+      paymentStatus: 'pending',
     });
 
     // Save the booking to the database
@@ -123,6 +130,10 @@ exports.createBooking = async (req, res) => {
 
     // Update guest's bookings array
     await Guest.findByIdAndUpdate(guest._id, { $push: { bookings: newBooking._id } });
+
+
+    // Create a Payment Intent with Stripe
+    const paymentIntentResult = await createPaymentIntent(newBooking.bookingId,totalPriceAfterTax);
 
     const formattedcheckInDate = new Date(checkInDate);
     const formattedcheckOutDate = new Date(checkOutDate);
@@ -149,7 +160,12 @@ exports.createBooking = async (req, res) => {
 
     sendEmail(guestInformation.email,`Booking Confirmation ${newBooking.bookingId}`,email_content)
     // Respond with the created booking details
-    res.status(201).json(newBooking);
+    // res.status(201).json(newBooking);
+    res.status(201).json({
+      message: 'Booking initiated, complete payment to confirm',
+      bookingId: newBooking.bookingId,
+      clientSecret: paymentIntentResult.clientSecret, // Send to frontend to complete the payment
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error 1', error: error.message });
