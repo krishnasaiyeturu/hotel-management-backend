@@ -133,7 +133,7 @@ exports.createBooking = async (req, res) => {
 
 
     // Create a Payment Intent with Stripe
-    const paymentIntentResult = await createPaymentIntent(newBooking.bookingId,totalPriceAfterTax);
+    const stripeSession = await createPaymentSession(newBooking.bookingId,totalPriceAfterTax);
 
     const formattedcheckInDate = new Date(checkInDate);
     const formattedcheckOutDate = new Date(checkOutDate);
@@ -164,7 +164,7 @@ exports.createBooking = async (req, res) => {
     res.status(201).json({
       message: 'Booking initiated, complete payment to confirm',
       bookingId: newBooking.bookingId,
-      clientSecret: paymentIntentResult.clientSecret, // Send to frontend to complete the payment
+      sessionId: stripeSession.sessionId, // Send to frontend to complete the payment
     });
   } catch (error) {
     console.error(error);
