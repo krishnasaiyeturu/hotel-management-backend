@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const { TAX_RATE, S3_BUCKET_NAME } = require('../utils/constants');
 const { bookingConfirmation } = require('../email_template/booking_confirmation');
 const sendEmail = require('../utils/email');
-const { createPaymentIntent } = require('../utils/stripeService');
+const { createPaymentIntent, createPaymentSession } = require('../utils/stripeService');
 
 exports.createBooking = async (req, res) => {
   try {
@@ -83,9 +83,7 @@ exports.createBooking = async (req, res) => {
       const totalPriceAfterTax = totalPriceBeforeTax + taxAmount;
 
 
-      if (!paymentIntentResult.success) {
-        return res.status(500).json({ message: 'Payment initiation failed', error: paymentIntentResult.error });
-      }
+
 
 
         // Check if the guest already exists by email
@@ -134,6 +132,10 @@ exports.createBooking = async (req, res) => {
 
     // Create a Payment Intent with Stripe
     const stripeSession = await createPaymentSession(newBooking.bookingId,totalPriceAfterTax);
+
+    if (!stripeSession.success) {
+      return res.status(500).json({ message: 'Payment Session failed', error: stripeSession.error });
+    }
 
     const formattedcheckInDate = new Date(checkInDate);
     const formattedcheckOutDate = new Date(checkOutDate);

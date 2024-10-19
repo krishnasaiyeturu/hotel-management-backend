@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 const bodyParser = require('body-parser');
 import morgan from 'morgan';
 import helmet from 'helmet';
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 import { createHotel } from './controller/HotelController';
 import { DEFAULT_HOTEL } from './utils/constants';
 import User from './models/User';
@@ -52,31 +53,22 @@ const startServer = async () => {
 
   app.post(
     '/api/webhooks/stripe',
-    bodyParser.raw({ type: 'application/json' }), // Stripe sends raw JSON, we need to parse it raw
+    express.raw({ type: 'application/json' }), // Raw body to verify signature
     async (req, res) => {
-      const sig = req.headers['stripe-signature'];
-      let event;
+      let event = req.body;
+      console.log(req?.rawBody,req?.body?.type);
+
   
-      try {
-        // Verify the event using Stripe's webhook signature
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          sig,
-          process.env.STRIPE_WEB_HOOK_SECRET // You will get this from the Stripe dashboard
-        );
-      } catch (err) {
-        console.error('Webhook signature verification failed:', err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-      }
-  
-      // Handle the payment_intent.succeeded event
-      if (event.type === 'payment_intent.succeeded') {
-        const paymentIntent = event.data.object;
-        const bookingId = paymentIntent.metadata.bookingId; // Retrieve booking ID from metadata
+      // Handle the `checkout.session.completed` event
+      console.log("event type",event.type)
+      if (event.type === 'checkout.session.completed') {
+        console.log(event.data.object);
+        const session = event.data.object;
+        const bookingId = session.metadata.bookingId; // Retrieve booking ID from session metadata
   
         try {
           // Confirm the booking by updating the paymentStatus and bookingStatus
-          await Booking.findByIdAndUpdate(bookingId, {
+          await Booking.findOneAndUpdate({bookingId}, {
             paymentStatus: 'paid',
           });
   
@@ -87,7 +79,7 @@ const startServer = async () => {
         }
       }
   
-      // Respond to Stripe that the webhook was received
+      // Respond to Stripe to acknowledge receipt of the event
       res.status(200).send({ received: true });
     }
   );

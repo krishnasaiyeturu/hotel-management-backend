@@ -16,18 +16,40 @@ exports.createPaymentIntent = async (bookingId,amount, currency = 'usd') => {
 
 
 
-exports.createPaymentSession = async (bookingId,amount, currency = 'usd') => {
+// Refactored function to create a Stripe payment session
+exports.createPaymentSession = async (bookingId, amount, currency = 'usd') => {
   try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{ price_data: { currency: currency, product_data: { name: 'ROOM' }, unit_amount: Math.round(amount * 100) }, quantity: 1, metadata: { bookingId: bookingId }, }],
-      mode: 'payment',
-      success_url: 'http://localhost:5173/success',
-      cancel_url: 'http://localhost:5173/cancel',
-    });
-    
+    // Prepare the session configuration
+    const sessionConfig = {
+      payment_method_types: ['card'], // Specify allowed payment methods
+      line_items: [
+        {
+          price_data: {
+            currency, // Set the currency dynamically
+            product_data: { name: 'ROOM' }, // Product name for the booking
+            unit_amount: Math.round(amount * 100), // Convert amount to cents
+          },
+          quantity: 1, // Single booking quantity
+        },
+      ],
+      mode: 'payment', // Use payment mode for a one-time payment
+      metadata: {
+        bookingId: bookingId, // Add metadata with the bookingId
+      },
+      success_url: 'http://localhost:5173/success', // Redirect URL after success
+      cancel_url: 'http://localhost:5173/cancel', // Redirect URL if payment is canceled
+    };
+
+    // Create the payment session
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    // Return the session ID for frontend to handle
     return { success: true, sessionId: session.id };
   } catch (error) {
+    // Log error for debugging (optional)
+    console.error('Error creating Stripe session:', error);
+
+    // Return error message to caller
     return { success: false, error: error.message };
   }
 };
