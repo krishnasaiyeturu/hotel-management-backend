@@ -25,20 +25,15 @@ exports.register = async (req, res) => {
       role: 'guest' // Default role for guests
     });
 
-    // Optionally, you can create a token for the user here if needed
-    // const token = newUser.getSignedJwt(); // If you want to return a token
+    const token = newUser.getSignedJwt();
 
     res.status(201).json({
-      message: 'Registration successful',
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role // You can include any other information you want to send
-      }
+      success: true,
+      token,
+      userId: newUser._id
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error 4' });
+    res.status(500).json({ message: 'Unable to register User' });
   }
 };
