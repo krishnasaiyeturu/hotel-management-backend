@@ -22,6 +22,7 @@ exports.createBooking = async (req, res) => {
       children,
       guestInformation,
       address,
+      paymentType
     } = req.body;
 
     // Validate input
@@ -121,6 +122,7 @@ exports.createBooking = async (req, res) => {
       bookingSource: 'online', // Assuming default; adjust as needed
       bookingChannel: 'website', // Assuming default; adjust as needed
       paymentStatus: 'pending',
+      paymentType:paymentType
     });
 
     // Save the booking to the database
@@ -130,12 +132,7 @@ exports.createBooking = async (req, res) => {
     await Guest.findByIdAndUpdate(guest._id, { $push: { bookings: newBooking._id } });
 
 
-    // Create a Payment Intent with Stripe
-    const stripeSession = await createPaymentSession(newBooking.bookingId,totalPriceAfterTax);
 
-    if (!stripeSession.success) {
-      return res.status(500).json({ message: 'Payment Session failed', error: stripeSession.error });
-    }
 
     const formattedcheckInDate = new Date(checkInDate);
     const formattedcheckOutDate = new Date(checkOutDate);
@@ -158,16 +155,33 @@ exports.createBooking = async (req, res) => {
       guestEmail:guestInformation.email
     };
 
-    let email_content = bookingConfirmation(emailValues);
 
-    sendEmail(guestInformation.email,`Booking Confirmation ${newBooking.bookingId}`,email_content)
-    // Respond with the created booking details
-    // res.status(201).json(newBooking);
+    if(paymentType === "online"){
+        // Create a Payment Intent with Stripe
+        const stripeSession = await createPaymentSession(newBooking.bookingId,totalPriceAfterTax,emailValues);
+
+        if (!stripeSession.success) {
+          return res.status(500).json({ message: 'Payment Session failed', error: stripeSession.error });
+        }
+
+        res.status(201).json({
+          message: 'Booking initiated, complete payment to confirm',
+          bookingId: newBooking.bookingId,
+          sessionId: stripeSession.sessionId, // Send to frontend to complete the payment
+        });
+
+    }else{
+      let email_content = bookingConfirmation(emailValues);
+
+      sendEmail(guestInformation.email,`Booking Confirmation ${newBooking.bookingId}`,email_content)
+      // Respond with the created booking details
     res.status(201).json({
-      message: 'Booking initiated, complete payment to confirm',
+      message: `Booking Completed ${newBooking.bookingId}`,
       bookingId: newBooking.bookingId,
-      sessionId: stripeSession.sessionId, // Send to frontend to complete the payment
     });
+
+    }
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error 1', error: error.message });

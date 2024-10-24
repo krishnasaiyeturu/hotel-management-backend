@@ -11,6 +11,7 @@ npm install
 # serve at http://localhost:4000/
 
 npm start
+stripe listen --forward-to localhost:4000/api/webhooks/stripe
 ```
 
 ## Prerequisites

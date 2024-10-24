@@ -11,6 +11,9 @@ import { DEFAULT_HOTEL } from './utils/constants';
 import User from './models/User';
 import { createUser } from './controller/UserController';
 import Booking from './models/Booking';
+import { bookingConfirmation } from './email_template/booking_confirmation';
+import { createInvoice } from './utils/stripeService';
+const sendEmail = require('./utils/email');
 const userRoutes = require('./routes/userRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -56,7 +59,7 @@ const startServer = async () => {
     express.raw({ type: 'application/json' }), // Raw body to verify signature
     async (req, res) => {
       let event = req.body;
-      console.log(req?.rawBody,req?.body?.type);
+      console.log(req?.body?.type);
 
   
       // Handle the `checkout.session.completed` event
@@ -71,6 +74,15 @@ const startServer = async () => {
           await Booking.findOneAndUpdate({bookingId}, {
             paymentStatus: 'paid',
           });
+
+          let bookingDetails = JSON.parse(session.metadata.otherDetails);
+          //Booking Confirmation Email 
+          let email_content = bookingConfirmation(bookingDetails);
+
+          await sendEmail(bookingDetails.guestEmail,`Booking Confirmation ${bookingId}`,email_content);
+          // Call the function to create and send an invoice
+          console.log("INVOICE DETAILS", bookingId, bookingDetails, session.amount_total)
+          await createInvoice(bookingId, bookingDetails, session.amount_total);
   
           console.log('Booking confirmed for ID:', bookingId);
         } catch (error) {
@@ -128,6 +140,9 @@ const startServer = async () => {
 
   // Call the initial user creation function
   createInitialUser();
+
+  // Import cron job
+  require('../src/cron/failedBookings'); 
 
   app.listen({ port }, () =>
     console.log(`🚀 Server ready at http://localhost:${port}`)
