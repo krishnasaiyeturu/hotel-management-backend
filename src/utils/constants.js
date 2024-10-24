@@ -9,9 +9,10 @@ module.exports = {
     DEFAULT_EXPIRATION: 3600, // Expiration time for presigned URLs (1 hour)
     SUPPORTED_ROOM_TYPES: [
       'Standard Room',
-      '2 Queen Beds Suite',
-      '1 King Bed One Bedroom Suite',
-      '1 Bedroom Suite'
+      'Queen Beds Suite',
+      'King Beds Suite',
+      'Superior King',
+      'Superior Queen'
     ],
     ROOM_STATUS:['available', 'booked', 'maintenance'],
     BOOKING_STATUS: ['booked', 'checked-in', 'checked-out', 'canceled','no-show'],
