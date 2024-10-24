@@ -25,6 +25,8 @@ const middlewares = require('./middleware/middlewares');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 const ErrorResponse = require('./middleware/ErrorResponse');
+  // Import cron job
+require('./cron/failedBookings'); 
 
 dotenv.config();
 
@@ -140,9 +142,6 @@ const startServer = async () => {
 
   // Call the initial user creation function
   createInitialUser();
-
-  // Import cron job
-  require('../src/cron/failedBookings'); 
 
   app.listen({ port }, () =>
     console.log(`🚀 Server ready at http://localhost:${port}`)
